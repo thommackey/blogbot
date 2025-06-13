@@ -64,4 +64,4 @@ cd blogbot
 ## Documentation
 - `CLAUDE.md` - Development guidelines and containerized workflow
 - `TODO.md` - Implementation phases and development tasks
-- `spec.md` - Complete project specification
+- `spec.md` - Complete project specification# Test change
