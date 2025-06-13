@@ -105,20 +105,16 @@
 
 ## Container Development Workflow
 
-### Volume Mounting Setup
+### Docker Compose Setup
 ```bash
-# Start development container with volume mounting
-docker run -it --rm \
-  -v $(pwd):/app \
-  -p 8000:8000 \
-  -w /app \
-  python:3.12-slim bash
+# Start development environment
+docker-compose --profile dev up -d
 
-# Inside container - one-time setup
-apt-get update && apt-get install -y git
-pip install poetry
-poetry install
-pre-commit install
+# Enter container shell
+docker-compose exec dev bash
+
+# One-time setup (inside container)
+./scripts/setup-dev.sh
 
 # Development workflow:
 # Edit files: Use normal tools on HOST
@@ -126,14 +122,20 @@ pre-commit install
 poetry run python -m app.main    # Start FastHTML server
 poetry run pytest               # Run tests
 poetry run ruff check           # Linting
+
+# Alternative: Run app with compose
+docker-compose --profile app up
+
+# Clean shutdown
+docker-compose down
 ```
 
 ### Benefits for Agent Development
-- Direct file editing without docker exec complexity
-- Dependency isolation in container
-- Immediate file change reflection
-- Git operations work from host or container
-- Easy container recreation when needed
+- **Simple commands**: No complex docker run chains
+- **Persistent containers**: Named containers in Docker Desktop
+- **Easy setup**: Automated dependency installation script
+- **Clean workflow**: compose up → exec → work → compose down
+- **Immediate changes**: Volume mounting for file editing
 
 ## FastHTML-Specific Implementation Notes
 

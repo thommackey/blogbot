@@ -13,7 +13,7 @@ This is a Python-based static site generator with a web interface - a "markdown 
 - **Database**: SQLite with FastLite (for app configuration only)
 - **Authentication**: GitHub OAuth
 - **API Authentication**: API keys
-- **Development**: Docker containers with volume mounting for isolation
+- **Development**: Docker Compose with volume mounting for clean workflow
 - **Deployment**: Docker → Render (app), GitHub Pages (static sites)
 
 ## Architecture
@@ -25,21 +25,17 @@ The system operates as a bridge between content repositories and published sites
 
 ## Development Commands
 
-This project uses **containerized development with volume mounting** for the optimal balance of isolation and usability:
+This project uses **Docker Compose** for clean, simple containerized development:
 
 ```bash
-# Volume Mounting Development (Recommended)
-docker run -it --rm \
-  -v $(pwd):/app \
-  -p 8000:8000 \
-  -w /app \
-  python:3.12-slim bash
+# Start development container
+docker-compose --profile dev up -d
 
-# Inside container - One-time setup
-apt-get update && apt-get install -y git
-pip install poetry
-poetry install
-pre-commit install
+# Enter development environment
+docker-compose exec dev bash
+
+# One-time setup (inside container)
+./scripts/setup-dev.sh
 
 # Development workflow:
 # - Edit files on HOST (using normal tools)
@@ -49,6 +45,12 @@ poetry run pytest             # Run tests
 poetry run ruff check         # Linting
 poetry run ruff format        # Code formatting
 poetry run mypy app/          # Type checking
+
+# Alternative: Run app directly with compose
+docker-compose --profile app up
+
+# Stop containers
+docker-compose down
 
 # Git operations from HOST or container (both work)
 git add . && git commit -m "message" && git push
@@ -138,30 +140,31 @@ Required for deployment:
 
 ## Containerized Development
 
-**Philosophy**: Volume mounting provides the best balance of isolation and practicality:
-- Code lives on HOST filesystem (easy editing, git operations)
-- Execution happens in CONTAINER (dependency isolation)
-- Changes are immediately reflected (no rebuilding needed)
-- Agent-friendly development patterns
+**Philosophy**: Docker Compose provides the cleanest containerized development experience:
+- **Simple commands**: `docker-compose up` and `docker-compose exec dev bash`
+- **No complex command chains**: Everything is in docker-compose.yml
+- **Persistent containers**: Named containers that survive restarts
+- **Clean teardown**: `docker-compose down` removes everything
 
-**Volume Mounting Workflow**:
-1. Mount source code as volume (`-v $(pwd):/app`)
-2. Install dependencies inside container (one-time setup)
-3. Edit files on host using normal file editing tools
-4. Run commands (tests, server, linting) inside container
-5. Git operations work from either host or container
+**Docker Compose Workflow**:
+1. `docker-compose --profile dev up -d` - Start development container
+2. `docker-compose exec dev bash` - Enter container shell
+3. `./scripts/setup-dev.sh` - One-time dependency installation
+4. Edit files on host, run commands in container
+5. `docker-compose down` - Clean shutdown
+
+**Container Profiles**:
+- `dev`: Development container with persistent shell
+- `app`: Runs FastHTML app directly (for testing)
 
 **Benefits for AI agents**:
-- Direct file editing without complex docker exec chains
-- Dependency isolation without host pollution
-- Easy container recreation when needed
-- Consistent development environment
-- Simple git workflow (can commit from host)
+- **Zero complex commands**: Simple, memorable docker-compose commands
+- **Reproducible setup**: Same environment every time
+- **Easy debugging**: Named containers visible in Docker Desktop
+- **Fast iteration**: Volume mounting for immediate file changes
+- **Clean isolation**: All dependencies contained, easy cleanup
 
-**Why not true isolation?**: 
-- Multiple `docker exec` commands lose session context
-- File editing through docker exec is error-prone
-- Volume mounting gives 90% of benefits with better usability
+**Setup Script**: `scripts/setup-dev.sh` handles all dependency installation automatically
 
 ## Writing code
 
