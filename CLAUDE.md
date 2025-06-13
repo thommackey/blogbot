@@ -25,36 +25,39 @@ The system operates as a bridge between content repositories and published sites
 
 ## Development Commands
 
-This project uses **containerized development** for complete isolation and agent-friendly workflows:
+This project uses **containerized development with volume mounting** for the optimal balance of isolation and usability:
 
 ```bash
-# Container Development (Recommended for agents)
+# Volume Mounting Development (Recommended)
 docker run -it --rm \
   -v $(pwd):/app \
   -p 8000:8000 \
   -w /app \
   python:3.12-slim bash
 
-# Inside container - Setup
+# Inside container - One-time setup
+apt-get update && apt-get install -y git
 pip install poetry
 poetry install
 pre-commit install
 
-# Inside container - Development
+# Development workflow:
+# - Edit files on HOST (using normal tools)
+# - Run commands in CONTAINER (for isolation)
 poetry run python -m app.main  # Start FastHTML server
 poetry run pytest             # Run tests
 poetry run ruff check         # Linting
 poetry run ruff format        # Code formatting
 poetry run mypy app/          # Type checking
 
+# Git operations from HOST or container (both work)
+git add . && git commit -m "message" && git push
+
 # Database operations (SQLite with FastLite)
 # No migrations needed - direct SQLite operations
 
 # Static site generation
 poetry run python -m app.services.static_site build
-
-# Alternative: Docker Compose for persistent development
-docker-compose up --build  # Runs app with volume mounting
 ```
 
 ## Project Structure (Planned)
@@ -135,24 +138,30 @@ Required for deployment:
 
 ## Containerized Development
 
-**Philosophy**: All development happens inside containers to ensure:
-- Complete isolation from host environment
-- Consistent Python/dependency versions
-- Safe experimentation without host pollution
+**Philosophy**: Volume mounting provides the best balance of isolation and practicality:
+- Code lives on HOST filesystem (easy editing, git operations)
+- Execution happens in CONTAINER (dependency isolation)
+- Changes are immediately reflected (no rebuilding needed)
 - Agent-friendly development patterns
 
-**Workflow**:
+**Volume Mounting Workflow**:
 1. Mount source code as volume (`-v $(pwd):/app`)
-2. Install dependencies inside container
-3. Run FastHTML server with port forwarding
-4. Edit code on host, changes reflect immediately
-5. Run tests/linting inside container
+2. Install dependencies inside container (one-time setup)
+3. Edit files on host using normal file editing tools
+4. Run commands (tests, server, linting) inside container
+5. Git operations work from either host or container
 
 **Benefits for AI agents**:
-- No risk to host environment
-- Reproducible development environment
-- Easy to reset/recreate container state
-- Matches production deployment closely
+- Direct file editing without complex docker exec chains
+- Dependency isolation without host pollution
+- Easy container recreation when needed
+- Consistent development environment
+- Simple git workflow (can commit from host)
+
+**Why not true isolation?**: 
+- Multiple `docker exec` commands lose session context
+- File editing through docker exec is error-prone
+- Volume mounting gives 90% of benefits with better usability
 
 ## Writing code
 

@@ -105,9 +105,9 @@
 
 ## Container Development Workflow
 
-### Development Environment Setup
+### Volume Mounting Setup
 ```bash
-# Start development container
+# Start development container with volume mounting
 docker run -it --rm \
   -v $(pwd):/app \
   -p 8000:8000 \
@@ -115,21 +115,25 @@ docker run -it --rm \
   python:3.12-slim bash
 
 # Inside container - one-time setup
+apt-get update && apt-get install -y git
 pip install poetry
 poetry install
 pre-commit install
 
-# Development loop (inside container)
-poetry run python -m app.main &  # Start FastHTML server
-poetry run pytest --watch        # Run tests on file changes
+# Development workflow:
+# Edit files: Use normal tools on HOST
+# Run commands: Execute in CONTAINER
+poetry run python -m app.main    # Start FastHTML server
+poetry run pytest               # Run tests
+poetry run ruff check           # Linting
 ```
 
 ### Benefits for Agent Development
-- Complete host environment isolation
-- Consistent dependency versions
-- Safe experimentation without pollution
-- Easy container reset/recreation
-- Matches production deployment
+- Direct file editing without docker exec complexity
+- Dependency isolation in container
+- Immediate file change reflection
+- Git operations work from host or container
+- Easy container recreation when needed
 
 ## FastHTML-Specific Implementation Notes
 
