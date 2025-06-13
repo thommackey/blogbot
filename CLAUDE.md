@@ -52,8 +52,14 @@ docker-compose --profile app up
 # Stop containers
 docker-compose down
 
-# Git operations from HOST or container (both work)
+# Git operations with pre-commit checks
+./scripts/commit.sh "commit message"  # Runs pre-commit in container, commits on host
+
+# Or manual workflow:
+docker-compose --profile dev up -d
+docker-compose exec dev poetry run pre-commit run --all-files
 git add . && git commit -m "message" && git push
+docker-compose down
 
 # Database operations (SQLite with FastLite)
 # No migrations needed - direct SQLite operations
