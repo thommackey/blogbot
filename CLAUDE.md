@@ -46,8 +46,8 @@ poetry run ruff check         # Linting
 poetry run ruff format        # Code formatting
 poetry run mypy app/          # Type checking
 
-# Alternative: Run app directly with compose
-docker-compose --profile app up
+# Alternative: Run app directly with port mapping for web access
+docker-compose --profile app up  # Accessible at http://localhost:8000
 
 # Stop containers
 docker-compose down
@@ -160,8 +160,8 @@ Required for deployment:
 5. `docker-compose down` - Clean shutdown
 
 **Container Profiles**:
-- `dev`: Development container with persistent shell
-- `app`: Runs FastHTML app directly (for testing)
+- `dev`: Development container with persistent shell (no port mapping - for tooling only)
+- `app`: Runs FastHTML app directly on port 8000 (for testing the web interface)
 
 **Benefits for AI agents**:
 - **Zero complex commands**: Simple, memorable docker-compose commands
