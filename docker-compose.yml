@@ -9,7 +9,7 @@ services:
     working_dir: /app
     environment:
       - PYTHONPATH=/app
-    command: tail -f /dev/null
+    command: bash -c "./scripts/setup-dev.sh && tail -f /dev/null"
     profiles:
       - dev
 
@@ -24,6 +24,6 @@ services:
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
-    command: bash -c "poetry run python -m app.main"
+    command: bash -c "./scripts/setup-dev.sh && poetry run python -m app.main"
     profiles:
       - app
