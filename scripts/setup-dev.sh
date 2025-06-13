@@ -4,9 +4,9 @@
 
 set -e
 
-# Logging function with timestamps
+# Logging function with timestamps - force stdout and flush
 log() {
-    echo "$(date '+%Y-%m-%d %H:%M:%S') [SETUP] $1"
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [SETUP] $1" | tee /proc/1/fd/1
 }
 
 log "🐳 Setting up BlogBot development environment..."

@@ -9,9 +9,15 @@ services:
     working_dir: /app
     environment:
       - PYTHONPATH=/app
-    command: bash -c "./scripts/setup-dev.sh && tail -f /dev/null"
+      - PYTHONUNBUFFERED=1
+    command: bash -c "./scripts/setup-dev.sh && echo 'Container ready - logs visible in Docker Desktop' && tail -f /dev/null"
     profiles:
       - dev
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   app:
     image: python:3.12-slim
