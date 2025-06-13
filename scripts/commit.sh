@@ -4,28 +4,36 @@
 
 set -e
 
+# Logging function that sends to Docker container logs
+log() {
+    local message="$(date '+%Y-%m-%d %H:%M:%S') [COMMIT] $1"
+    echo "$message"
+    # Also send to container logs if container is running
+    docker-compose exec -T dev echo "$message" 2>/dev/null || true
+}
+
 if [ -z "$1" ]; then
     echo "❌ Usage: $0 'commit message'"
     exit 1
 fi
 
-echo "🐳 Starting container for pre-commit checks..."
+log "🐳 Starting container for pre-commit checks..."
 docker-compose --profile dev up -d
 
-echo "🔍 Running pre-commit checks in container..."
-if docker-compose exec dev poetry run pre-commit run --all-files; then
-    echo "✅ Pre-commit checks passed!"
-    echo "📝 Committing changes on host..."
+log "🔍 Running pre-commit checks in container..."
+if docker-compose exec dev sh -c "echo '$(date '+%Y-%m-%d %H:%M:%S') [PRE-COMMIT] Starting pre-commit checks...' && poetry run pre-commit run --all-files"; then
+    log "✅ Pre-commit checks passed!"
+    log "📝 Committing changes on host..."
     git add .
     git commit -m "$1"
     git push
-    echo "🚀 Changes pushed successfully!"
+    log "🚀 Changes pushed successfully!"
 else
-    echo "❌ Pre-commit checks failed. Fix issues and try again."
+    log "❌ Pre-commit checks failed. Fix issues and try again."
     docker-compose down
     exit 1
 fi
 
-echo "🧹 Cleaning up container..."
+log "🧹 Cleaning up container..."
 docker-compose down
-echo "✨ Done!"
+log "✨ Done!"
